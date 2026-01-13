@@ -1,39 +1,35 @@
-+-------------------------------------------------------+
-|            CONFIGURATION LAYER (Git VCS)              |
-|                                                       |
-|   [ users.yaml (Declarative Source of Truth)      ]   |
-|                                                       |
-+---------------------------+---------------------------+
-                            |
-                            | (Data Ingestion)
-                            v
-+---------------------------+---------------------------+
-|            TERRAFORM PROVISIONING ENGINE              |
-|                                                       |
-|   +-----------------------------------------------+   |
-|   | 1. Ingest & Decode (yamldecode)               |   |
-|   +-----------------------+-----------------------+   |
-|                           |                           |
-|   +-----------------------v-----------------------+   |
-|   | 2. Data Normalization (locals / flatten)      |   |
-|   +-----------------------+-----------------------+   |
-|                           |                           |
-|   +-----------------------v-----------------------+   |
-|   | 3. Dynamic Iteration (for_each meta-argument) |   |
-|   +-----------------------+-----------------------+   |
-|                                                       |
-+---------------------------+---------------------------+
-                            |
-                            | (AWS API Calls)
-    +-----------------------+-----------------------+
-    |                                               |
-+---v-------------------+       +-------------------v---+
-| AWS IAM               |       | AWS IAM               |
-| User Resource         |------>| Policy Attachment     |
-| (Identity)            |       | (Managed Policies)    |
-+---+-------------------+       +-----------------------+
-    |
-+---v-------------------+
-| AWS IAM Login Profile |
-| (w/ Lifecycle Rules)  |
-+-----------------------+
+┌───────────────────────────────────────────┐
+│           Configuration Layer              │
+│        (Version Controlled in Git)         │
+│                                           │
+│   user.yml                                 │
+│   ─ Declarative user & role definitions   │
+└───────────────────────┬───────────────────┘
+                        │
+                        ▼
+┌───────────────────────────────────────────┐
+│         Terraform Runtime Layer            │
+│                                           │
+│   Data Ingestion                           │
+│   ─ yamldecode()                           │
+│                                           │
+│   Data Normalization                       │
+│   ─ locals + flatten()                    │
+│                                           │
+│   Dynamic Iteration                        │
+│   ─ for_each                              │
+└───────────────────────┬───────────────────┘
+                        │
+                        ▼
+┌───────────────────────────────────────────┐
+│          AWS IAM Control Plane             │
+│                                           │
+│   IAM Users                                │
+│   ─ Dynamically provisioned                │
+│                                           │
+│   Policy Attachments                       │
+│   ─ AWS Managed Policies                  │
+│                                           │
+│   Login Profiles                           │
+│   ─ Controlled lifecycle rules             │
+└───────────────────────────────────────────┘
